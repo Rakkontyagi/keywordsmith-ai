@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { UserProfile } from "@/components/settings/UserProfile";
 import { APISettings } from "@/components/settings/APISettings";
 import { 
@@ -16,7 +17,8 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState("profile");
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <DashboardLayout>
+      <div className="max-w-4xl">
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -120,6 +122,7 @@ export default function Settings() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

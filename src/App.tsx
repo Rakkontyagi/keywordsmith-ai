@@ -13,6 +13,8 @@ import Dashboard from "./pages/Dashboard";
 import Analytics from "./pages/Analytics";
 import Projects from "./pages/Projects";
 import Settings from "./pages/Settings";
+import ContentGenerator from "./pages/ContentGenerator";
+import KeywordResearch from "./pages/KeywordResearch";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,11 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/generate" element={
+              <ProtectedRoute>
+                <ContentGenerator />
+              </ProtectedRoute>
+            } />
             <Route path="/dashboard/analytics" element={
               <ProtectedRoute>
                 <Analytics />
@@ -42,6 +49,11 @@ const App = () => (
             <Route path="/dashboard/projects" element={
               <ProtectedRoute>
                 <Projects />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard/keywords" element={
+              <ProtectedRoute>
+                <KeywordResearch />
               </ProtectedRoute>
             } />
             <Route path="/dashboard/settings" element={

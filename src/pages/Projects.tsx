@@ -1,9 +1,10 @@
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ProjectList } from "@/components/projects/ProjectList";
 
 export default function Projects() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <DashboardLayout>
       <ProjectList />
-    </div>
+    </DashboardLayout>
   );
 }
