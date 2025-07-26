@@ -1,150 +1,149 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Search, TrendingUp, Target, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Search, TrendingUp, Volume2, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface KeywordSuggestion {
   keyword: string;
   volume: number;
-  difficulty: 'easy' | 'medium' | 'hard';
-  trend: 'up' | 'down' | 'stable';
+  difficulty: number;
+  trend: "up" | "down" | "stable";
 }
 
 interface KeywordInputProps {
   value?: string;
   onChange: (value: string) => void;
   error?: string;
+  placeholder?: string;
 }
 
-export function KeywordInput({ value = '', onChange, error }: KeywordInputProps) {
-  const [suggestions, setSuggestions] = useState<KeywordSuggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+const mockSuggestions: KeywordSuggestion[] = [
+  { keyword: "SEO automation", volume: 12000, difficulty: 65, trend: "up" },
+  { keyword: "content marketing", volume: 45000, difficulty: 72, trend: "up" },
+  { keyword: "keyword research", volume: 33000, difficulty: 68, trend: "stable" },
+  { keyword: "SEO tools", volume: 28000, difficulty: 70, trend: "up" },
+  { keyword: "automated content", volume: 8500, difficulty: 45, trend: "down" },
+];
 
-  // Mock keyword suggestions
-  const mockSuggestions: KeywordSuggestion[] = [
-    { keyword: 'ai content marketing', volume: 12000, difficulty: 'medium', trend: 'up' },
-    { keyword: 'content marketing automation', volume: 8500, difficulty: 'hard', trend: 'up' },
-    { keyword: 'seo content strategy', volume: 15000, difficulty: 'medium', trend: 'stable' },
-    { keyword: 'automated content creation', volume: 6200, difficulty: 'easy', trend: 'up' },
-    { keyword: 'content marketing tools', volume: 22000, difficulty: 'hard', trend: 'stable' },
-  ];
+export function KeywordInput({ value, onChange, error, placeholder = "Enter your target keyword..." }: KeywordInputProps) {
+  const [open, setOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<KeywordSuggestion[]>([]);
+  const [inputValue, setInputValue] = useState(value || "");
 
   useEffect(() => {
-    if (value.length > 2) {
-      setIsLoading(true);
-      // Simulate API call
-      const timer = setTimeout(() => {
-        setSuggestions(mockSuggestions.filter(s => 
-          s.keyword.toLowerCase().includes(value.toLowerCase())
-        ));
-        setIsLoading(false);
-        setShowSuggestions(true);
-      }, 500);
-
-      return () => clearTimeout(timer);
+    if (inputValue.length > 2) {
+      const filtered = mockSuggestions.filter(suggestion =>
+        suggestion.keyword.toLowerCase().includes(inputValue.toLowerCase())
+      );
+      setSuggestions(filtered);
     } else {
-      setShowSuggestions(false);
+      setSuggestions([]);
     }
-  }, [value]);
+  }, [inputValue]);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'hard': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+  const handleInputChange = (newValue: string) => {
+    setInputValue(newValue);
+    onChange(newValue);
+    if (newValue.length > 2) {
+      setOpen(true);
+    } else {
+      setOpen(false);
     }
+  };
+
+  const handleSuggestionSelect = (suggestion: KeywordSuggestion) => {
+    setInputValue(suggestion.keyword);
+    onChange(suggestion.keyword);
+    setOpen(false);
+  };
+
+  const getDifficultyColor = (difficulty: number) => {
+    if (difficulty < 30) return "bg-success/10 text-success";
+    if (difficulty < 60) return "bg-warning/10 text-warning";
+    return "bg-destructive/10 text-destructive";
   };
 
   const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'up': return <TrendingUp className="h-3 w-3 text-green-500" />;
-      case 'down': return <TrendingUp className="h-3 w-3 text-red-500 rotate-180" />;
-      default: return <Target className="h-3 w-3 text-gray-500" />;
-    }
+    if (trend === "up") return <TrendingUp className="h-3 w-3 text-success" />;
+    if (trend === "down") return <TrendingUp className="h-3 w-3 text-destructive rotate-180" />;
+    return <div className="h-3 w-3 bg-muted rounded-full" />;
   };
 
   return (
-    <div className="relative">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Enter your target keyword (e.g., 'AI content marketing')"
-          className="pl-10"
-          onFocus={() => value.length > 2 && setShowSuggestions(true)}
-        />
-        {showSuggestions && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6"
-            onClick={() => setShowSuggestions(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-      
-      {error && (
-        <p className="text-sm text-destructive mt-1">{error}</p>
-      )}
-
-      {showSuggestions && (
-        <Card className="absolute top-full mt-1 w-full z-50 shadow-elegant animate-scale-in">
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-4 text-center text-muted-foreground">
-                <Search className="h-4 w-4 animate-spin mx-auto mb-2" />
-                Searching keywords...
-              </div>
-            ) : suggestions.length > 0 ? (
-              <div className="max-h-64 overflow-y-auto">
+    <div className="space-y-2">
+      <Popover open={open && suggestions.length > 0} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={inputValue}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder={placeholder}
+              className="pl-10 pr-10"
+              onFocus={() => {
+                if (inputValue.length > 2 && suggestions.length > 0) {
+                  setOpen(true);
+                }
+              }}
+            />
+            {inputValue && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6"
+                onClick={() => {
+                  setInputValue("");
+                  onChange("");
+                  setOpen(false);
+                }}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <Command>
+            <CommandList>
+              <CommandEmpty>No keyword suggestions found.</CommandEmpty>
+              <CommandGroup heading="Keyword Suggestions">
                 {suggestions.map((suggestion, index) => (
-                  <div
+                  <CommandItem
                     key={index}
-                    className="p-3 hover:bg-muted/50 cursor-pointer border-b last:border-b-0 transition-colors"
-                    onClick={() => {
-                      onChange(suggestion.keyword);
-                      setShowSuggestions(false);
-                    }}
+                    value={suggestion.keyword}
+                    onSelect={() => handleSuggestionSelect(suggestion)}
+                    className="flex items-center justify-between p-3 cursor-pointer"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{suggestion.keyword}</span>
-                          {getTrendIcon(suggestion.trend)}
-                        </div>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-muted-foreground">
-                            {suggestion.volume.toLocaleString()} searches/month
-                          </span>
-                          <Badge 
-                            variant="secondary" 
-                            className={`text-xs ${getDifficultyColor(suggestion.difficulty)}`}
-                          >
-                            {suggestion.difficulty}
-                          </Badge>
-                        </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{suggestion.keyword}</span>
+                        {getTrendIcon(suggestion.trend)}
                       </div>
                     </div>
-                  </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <div className="flex items-center gap-1">
+                        <Volume2 className="h-3 w-3" />
+                        <span>{suggestion.volume.toLocaleString()}</span>
+                      </div>
+                      <Badge 
+                        variant="secondary" 
+                        className={cn("text-xs", getDifficultyColor(suggestion.difficulty))}
+                      >
+                        {suggestion.difficulty}%
+                      </Badge>
+                    </div>
+                  </CommandItem>
                 ))}
-              </div>
-            ) : (
-              <div className="p-4 text-center text-muted-foreground">
-                <Search className="h-4 w-4 mx-auto mb-2" />
-                No keyword suggestions found
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {error && <p className="text-sm text-destructive">{error}</p>}
     </div>
   );
 }
